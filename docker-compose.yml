@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  samba:
+    image: dperson/samba
+    container_name: samba
+    restart: unless-stopped
+    ports:
+      - "139:139"
+      - "445:445"
+    environment:
+      - USERID=1000
+      - GROUPID=1000
+      - TZ=America/New_York
+    command: >
+      -u "srvadmin;password"
+      -s "Shared;/shared;yes;no;no;srvadmin"
+    volumes:
+      - /srv/docker/samba/data:/shared
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/docker/portainer/data:/data
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    command: --cleanup --schedule "0 0 4 * * *"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
